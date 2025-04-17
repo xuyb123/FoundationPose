@@ -20,20 +20,23 @@ def run_neural_object_field(cfg, K, rgbs, depths, masks, cam_in_obs, debug=0, sa
   depths = np.asarray(depths)
   masks = np.asarray(masks)
   cam_in_obs = np.asarray(cam_in_obs)
-  glcam_in_obs = cam_in_obs@glcam_in_cvcam
-
+  import pdb
+  pdb.set_trace()
+  glcam_in_obs = cam_in_obs@glcam_in_cvcam  # glcam_in_cvcam 表示 OpenGL 相机到 OpenCV 相机坐标系的变换矩阵
   cfg['save_dir'] = save_dir
   os.makedirs(save_dir, exist_ok=True)
-
+  import pdb
+  pdb.set_trace()
   for i,rgb in enumerate(rgbs):
     imageio.imwrite(f'{save_dir}/rgb_{i:07d}.png', rgb)
 
+  pdb.set_trace()
   sc_factor,translation,pcd_real_scale, pcd_normalized = compute_scene_bounds(None,glcam_in_obs, K, use_mask=True,base_dir=save_dir,rgbs=rgbs,depths=depths,masks=masks, eps=cfg['dbscan_eps'], min_samples=cfg['dbscan_eps_min_samples'])
   cfg['sc_factor'] = sc_factor
   cfg['translation'] = translation
 
   o3d.io.write_point_cloud(f'{save_dir}/pcd_normalized.ply', pcd_normalized)
-
+  # 只获取掩码部分的RGB，depth，和normal
   rgbs_, depths_, masks_, normal_maps,poses = preprocess_data(rgbs, depths, masks,normal_maps=None,poses=glcam_in_obs,sc_factor=cfg['sc_factor'],translation=cfg['translation'])
 
   nerf = NerfRunner(cfg, rgbs_, depths_, masks_, normal_maps=None, poses=poses, K=K, occ_masks=None, build_octree_pcd=pcd_normalized)
@@ -61,7 +64,8 @@ def run_one_ob(base_dir, cfg, use_refined_mask=False):
     rgb = imageio.imread(color_file)
     depth = cv2.imread(color_file.replace('rgb','depth_enhanced'), -1)/1e3
     if use_refined_mask:
-      mask = cv2.imread(color_file.replace('rgb','mask_refined'), -1)
+      mask = cv2.imread(color_file.replace('rgb','mask'), -1)
+      # mask = cv2.imread(color_file.replace('rgb','mask_refined'), -1)
     else:
       mask = cv2.imread(color_file.replace('rgb','mask'), -1)
     cam_in_ob = np.loadtxt(color_file.replace('rgb','cam_in_ob').replace('.png','.txt')).reshape(4,4)

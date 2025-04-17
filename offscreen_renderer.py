@@ -10,6 +10,7 @@
 import os,sys,time,socket
 code_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(code_path)
+os.environ['PYOPENGL_PLATFORM'] = 'egl'
 import open3d as o3d
 import numpy as np
 from PIL import Image
